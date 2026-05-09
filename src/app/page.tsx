@@ -82,21 +82,21 @@ function BureauOverlay({ yangDun, bureau, onYangDun, onBureau }: {
   onBureau: (v: number) => void;
 }) {
   return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/80 backdrop-blur-sm rounded-xl">
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/30 backdrop-blur-[2px] rounded-xl">
       <div className="bg-gray-900 border border-amber-500/60 rounded-xl p-5 shadow-2xl max-w-xs w-full mx-3">
         <h3 className="text-sm text-amber-400 font-medium mb-3 flex items-center gap-1">
           <span>📋</span> 第一步：定局
         </h3>
 
         {/* 阴阳遁 */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-1">
           <button
             onClick={() => onYangDun(true)}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
               yangDun === true ? "bg-amber-600 text-white shadow-md" : "bg-gray-700 text-gray-400 hover:bg-gray-600"
             }`}
           >
-            ☀ 阳遁（冬至→芒种）
+            ☀ 阳遁
           </button>
           <button
             onClick={() => onYangDun(false)}
@@ -104,9 +104,12 @@ function BureauOverlay({ yangDun, bureau, onYangDun, onBureau }: {
               yangDun === false ? "bg-amber-600 text-white shadow-md" : "bg-gray-700 text-gray-400 hover:bg-gray-600"
             }`}
           >
-            🌙 阴遁（夏至→大雪）
+            🌙 阴遁
           </button>
         </div>
+        <p className="text-[10px] text-gray-500 text-center mb-2">
+          {yangDun === true ? "冬至 → 芒种" : yangDun === false ? "夏至 → 大雪" : "请选择阴阳遁"}
+        </p>
 
         {/* 局数 */}
         <div className="flex items-center gap-2 mb-1">
@@ -145,6 +148,7 @@ export default function Home() {
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [xunShouPopover, setXunShouPopover] = useState<PalaceId | null>(null);
+  const [xunShouGong, setXunShouGong] = useState<PalaceId | null>(null);
 
   const isStepMode = mode === "step";
 
@@ -152,6 +156,7 @@ export default function Home() {
   useEffect(() => {
     setErrorHighlights({});
     setZhiFuGong(null);
+    setXunShouGong(null);
     setToast(null);
   }, [currentStep, date]);
 
@@ -176,8 +181,10 @@ export default function Home() {
       displayPalaces[gid] = {
         diPan: answer.dipan?.[gid],
         tianPanGan: answer.tianpan?.[gid]?.gan,
-        tianPanStar: answer.tianpan?.[gid]?.star,
-        renPanDoor: answer.renpan?.[gid],
+        tianPanStar: answer.tianpan?.[gid]?.star
+          ?? (isStepMode && currentStep === "xunshou" && xunShouGong === gid ? answer.zhiFu : undefined),
+        renPanDoor: answer.renpan?.[gid]
+          ?? (isStepMode && currentStep === "xunshou" && xunShouGong === gid ? answer.zhiShi : undefined),
         shenPanSpirit: answer.shenpan?.[gid],
       };
     }
@@ -272,6 +279,7 @@ export default function Home() {
     const newAnswer: typeof answer = { ...answer, zhiFu, zhiShi };
     if (xunShou) newAnswer.xunShou = xunShou;
     setAnswer(newAnswer);
+    setXunShouGong(gongId);
     setXunShouPopover(null);
   }, [answer, setAnswer]);
 
