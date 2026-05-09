@@ -5,8 +5,8 @@ import { usePractice } from "@/hooks/usePractice";
 import { PanGrid, CandidatePopover } from "@/components/PanGrid";
 import { ControlBar } from "@/components/ControlBar";
 import { GanzhiBar } from "@/components/GanzhiBar";
-import { BureauInput, XunShouInput, SolarTermDialog } from "@/components/StepInputs";
-import { FuTouDialog, ZhiFuShiDialog, JiaziDialog } from "@/components/QuickRefs";
+import { BureauInput, XunShouInput } from "@/components/StepInputs";
+import { QuickRefDialog } from "@/components/QuickRefs";
 import { Toast } from "@/components/Toast";
 import { paiPan } from "@/lib/engine";
 import type { PalaceId, TianGan, NineStar, EightDoor, EightSpirit, LiuJia } from "@/lib/types";
@@ -25,10 +25,7 @@ export default function Home() {
   const [popover, setPopover] = useState<PopoverType | null>(null);
   const [errorHighlights, setErrorHighlights] = useState<Partial<Record<PalaceId, "correct" | "error">>>({});
   const [zhiFuGong, setZhiFuGong] = useState<PalaceId | null>(null);
-  const [showSolarTerms, setShowSolarTerms] = useState(false);
-  const [showFuTou, setShowFuTou] = useState(false);
-  const [showZhiFuShi, setShowZhiFuShi] = useState(false);
-  const [showJiazi, setShowJiazi] = useState(false);
+  const [showQuickRef, setShowQuickRef] = useState(false);
   const [toast, setToast] = useState<import("@/hooks/usePractice").CheckResult | null>(null);
   const [aiKey, setAiKey] = useState("");
   const [aiReading, setAiReading] = useState("");
@@ -251,28 +248,10 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
               onResetStep={resetStep} onResetAll={resetAll} onUndo={undo}
             />
             <button
-              onClick={() => setShowSolarTerms(true)}
+              onClick={() => setShowQuickRef(true)}
               className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
             >
-              📅 节气局数速查表
-            </button>
-            <button
-              onClick={() => setShowFuTou(true)}
-              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
-            >
-              🔑 符头（六甲旬首）速查
-            </button>
-            <button
-              onClick={() => setShowZhiFuShi(true)}
-              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
-            >
-              ⭐ 值符值使固定速查
-            </button>
-            <button
-              onClick={() => setShowJiazi(true)}
-              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
-            >
-              🔢 六十甲子表
+              📚 速查手册
             </button>
           </aside>
 
@@ -365,17 +344,8 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
         />
       )}
 
-      {showSolarTerms && (
-        <SolarTermDialog onClose={() => setShowSolarTerms(false)} />
-      )}
-      {showFuTou && (
-        <FuTouDialog onClose={() => setShowFuTou(false)} />
-      )}
-      {showZhiFuShi && (
-        <ZhiFuShiDialog onClose={() => setShowZhiFuShi(false)} />
-      )}
-      {showJiazi && (
-        <JiaziDialog onClose={() => setShowJiazi(false)} />
+      {showQuickRef && (
+        <QuickRefDialog onClose={() => setShowQuickRef(false)} />
       )}
     </div>
   );

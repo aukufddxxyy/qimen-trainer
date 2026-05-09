@@ -1,7 +1,7 @@
 "use client";
 
 import type { PracticeMode, PracticeStep } from "@/lib/types";
-import { DI_ZHI } from "@/lib/types";
+import { GanzhiDatePicker } from "@/components/GanzhiDatePicker";
 
 const STEPS: { id: PracticeStep; label: string }[] = [
   { id: "bureau", label: "① 定局" },
@@ -35,13 +35,6 @@ export function ControlBar({
   onStepChange, onRandom, onReveal, onHideAnswer, onCheck, isStepMode, showAnswer,
   onResetStep, onResetAll, onUndo,
 }: ControlBarProps) {
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-  const h = date.getHours();
-
-  const zhiIdx = Math.floor(((h + 1) % 24) / 2);
-
   return (
     <div className="space-y-3">
       {/* 模式切换 */}
@@ -64,55 +57,8 @@ export function ControlBar({
         </button>
       </div>
 
-      {/* 时间选择 */}
-      <div className="flex gap-2 flex-wrap items-center">
-        <input
-          type="number" value={y} min={2000} max={2030}
-          onChange={e => onDateChange(new Date(+e.target.value, m-1, d, h))}
-          className="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
-          title="年"
-        />
-        <span className="text-gray-500">-</span>
-        <input
-          type="number" value={m} min={1} max={12}
-          onChange={e => onDateChange(new Date(y, +e.target.value-1, d, h))}
-          className="w-12 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
-          title="月"
-        />
-        <span className="text-gray-500">-</span>
-        <input
-          type="number" value={d} min={1} max={31}
-          onChange={e => onDateChange(new Date(y, m-1, +e.target.value, h))}
-          className="w-12 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
-          title="日"
-        />
-        <select
-          value={zhiIdx}
-          onChange={e => {
-            const zhi = +e.target.value;
-            const hour = zhi * 2;
-            onDateChange(new Date(y, m-1, d, hour));
-          }}
-          className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
-        >
-          {DI_ZHI.map((z, i) => {
-            const hStart = (i * 2 + 23) % 24;
-            const hEnd = (hStart + 1) % 24;
-            return (
-              <option key={z} value={i}>
-                {z}时 ({String(hStart).padStart(2,"0")}:00-{String((hStart+2)%24).padStart(2,"0")}:00)
-              </option>
-            );
-          })}
-        </select>
-
-        <button onClick={onRandom} className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
-          随机
-        </button>
-        <button onClick={() => onDateChange(new Date())} className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
-          现在
-        </button>
-      </div>
+      {/* 时辰选择器 */}
+      <GanzhiDatePicker date={date} onChange={onDateChange} onRandom={onRandom} />
 
       {/* 步骤导航（分步模式） */}
       {isStepMode && (
