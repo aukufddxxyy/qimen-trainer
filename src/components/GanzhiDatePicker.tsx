@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { DI_ZHI } from "@/lib/types";
 
 interface GanzhiDatePickerProps {
@@ -101,7 +101,6 @@ export function GanzhiDatePicker({ date, onChange, onRandom }: GanzhiDatePickerP
               {weeks.map((week, wi) =>
                 week.map((day, di) => {
                   if (day === null) return <div key={`${wi}-${di}`} />;
-                  const isToday = day === d;
                   const isSelected = day === d;
                   return (
                     <button
