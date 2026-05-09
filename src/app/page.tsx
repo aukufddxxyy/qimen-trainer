@@ -148,7 +148,6 @@ export default function Home() {
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [xunShouPopover, setXunShouPopover] = useState<PalaceId | null>(null);
-  const [xunShouGong, setXunShouGong] = useState<PalaceId | null>(null);
 
   const isStepMode = mode === "step";
 
@@ -156,7 +155,6 @@ export default function Home() {
   useEffect(() => {
     setErrorHighlights({});
     setZhiFuGong(null);
-    setXunShouGong(null);
     setToast(null);
   }, [currentStep, date]);
 
@@ -181,10 +179,8 @@ export default function Home() {
       displayPalaces[gid] = {
         diPan: answer.dipan?.[gid],
         tianPanGan: answer.tianpan?.[gid]?.gan,
-        tianPanStar: answer.tianpan?.[gid]?.star
-          ?? (isStepMode && currentStep === "xunshou" && xunShouGong === gid ? answer.zhiFu : undefined),
-        renPanDoor: answer.renpan?.[gid]
-          ?? (isStepMode && currentStep === "xunshou" && xunShouGong === gid ? answer.zhiShi : undefined),
+        tianPanStar: answer.tianpan?.[gid]?.star,
+        renPanDoor: answer.renpan?.[gid],
         shenPanSpirit: answer.shenpan?.[gid],
       };
     }
@@ -279,7 +275,6 @@ export default function Home() {
     const newAnswer: typeof answer = { ...answer, zhiFu, zhiShi };
     if (xunShou) newAnswer.xunShou = xunShou;
     setAnswer(newAnswer);
-    setXunShouGong(gongId);
     setXunShouPopover(null);
   }, [answer, setAnswer]);
 
@@ -291,11 +286,6 @@ export default function Home() {
       const hl: Partial<Record<PalaceId, "correct" | "error">> = {};
       if (result.correct) {
         for (let g = 1; g <= 9; g++) hl[g as PalaceId] = "correct";
-        // 如果旬首步骤全对，标出值符所在宫
-        if (currentStep === "xunshou") {
-          const chart = paiPan(date);
-          setZhiFuGong(chart.meta.zhiFuGong);
-        }
       } else {
         for (const err of result.errors) hl[err.gongId] = "error";
         for (let g = 1; g <= 9; g++) {
