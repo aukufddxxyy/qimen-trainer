@@ -30,7 +30,6 @@ export default function Home() {
   const [aiKey, setAiKey] = useState("");
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
-  const [debugMsg, setDebugMsg] = useState("");
 
   const isStepMode = mode === "step";
 
@@ -143,11 +142,8 @@ export default function Home() {
   // 核对答案
   const handleCheck = useCallback(() => {
     try {
-      setDebugMsg("1:handleCheck 开始");
       const result = check(undefined, answer);
-      setDebugMsg("2:check 返回 correct=" + result.correct + " errors=" + result.errors.length);
       setToast(result);
-      setDebugMsg("3:setToast 已调用");
       const hl: Partial<Record<PalaceId, "correct" | "error">> = {};
       if (result.correct) {
         for (let g = 1; g <= 9; g++) hl[g as PalaceId] = "correct";
@@ -159,9 +155,7 @@ export default function Home() {
         }
       }
       setErrorHighlights(hl);
-      setDebugMsg("4:完成");
     } catch (e) {
-      setDebugMsg("ERR:" + String(e));
       setToast({
         step: currentStep,
         correct: false,
@@ -241,11 +235,6 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
       <div className="max-w-5xl mx-auto px-3 py-4">
           <header className="text-center mb-4">
             <h1 className="text-2xl font-bold text-amber-400">奇门排盘练习器</h1>
-            {debugMsg && (
-              <div className="mt-1 px-3 py-1 bg-red-700 text-white text-xs rounded-lg inline-block font-mono">
-                DEBUG: {debugMsg}
-              </div>
-            )}
             <GanzhiBar date={date} />
             <p className="text-xs text-gray-500 mt-1">
               {chartMeta
