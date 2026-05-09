@@ -19,7 +19,7 @@ export function Toast({ result, onDismiss }: ToastProps) {
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
       <div
-        className={`px-5 py-3 rounded-xl border-2 text-sm max-w-md animate-pulse ${
+        className={`px-5 py-3 rounded-xl border-2 text-sm max-w-md ${
           isCorrect
             ? "bg-green-600 border-green-300 text-white shadow-[0_0_20px_rgba(74,222,128,0.5)]"
             : "bg-red-600 border-red-300 text-white shadow-[0_0_20px_rgba(248,113,113,0.5)]"

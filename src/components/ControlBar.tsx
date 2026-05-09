@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { PracticeMode, PracticeStep } from "@/lib/types";
 import { GanzhiDatePicker } from "@/components/GanzhiDatePicker";
 
@@ -35,6 +36,14 @@ export function ControlBar({
   onStepChange, onRandom, onReveal, onHideAnswer, onCheck, isStepMode, showAnswer,
   onResetStep, onResetAll, onUndo,
 }: ControlBarProps) {
+  const [checkClicked, setCheckClicked] = useState(false);
+
+  const handleCheck = () => {
+    setCheckClicked(true);
+    onCheck();
+    setTimeout(() => setCheckClicked(false), 2000);
+  };
+
   return (
     <div className="space-y-3">
       {/* 模式切换 */}
@@ -81,8 +90,14 @@ export function ControlBar({
 
       {/* 操作按钮 */}
       <div className="flex gap-2">
-        <button onClick={onCheck} className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors">
-          核对答案
+        <button onClick={handleCheck}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+            checkClicked
+              ? "bg-yellow-500 text-black"
+              : "bg-emerald-700 hover:bg-emerald-600 text-white"
+          }`}
+        >
+          {checkClicked ? "✓ 已点击" : "核对答案"}
         </button>
         <button onClick={showAnswer ? onHideAnswer : onReveal}
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${

@@ -30,15 +30,16 @@ export default function Home() {
   const [aiKey, setAiKey] = useState("");
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [debugMsg, setDebugMsg] = useState("");
 
   const isStepMode = mode === "step";
 
-  // 切换步骤/日期/重置时清除高亮、值符标记和Toast
+  // 切换步骤/日期时清除高亮、值符标记和Toast
   useEffect(() => {
     setErrorHighlights({});
     setZhiFuGong(null);
     setToast(null);
-  }, [currentStep, date, results]);
+  }, [currentStep, date]);
 
   // 当前显示的盘
   const displayPalaces = {} as Record<PalaceId, {
@@ -141,22 +142,33 @@ export default function Home() {
 
   // 核对答案
   const handleCheck = useCallback(() => {
-    console.log("[DEBUG] handleCheck called, answer:", answer);
-    const result = check(undefined, answer);
-    console.log("[DEBUG] check result:", result);
-    setToast(result);
-    const hl: Partial<Record<PalaceId, "correct" | "error">> = {};
-    if (result.correct) {
-      for (let g = 1; g <= 9; g++) hl[g as PalaceId] = "correct";
-    } else {
-      for (const err of result.errors) hl[err.gongId] = "error";
-      for (let g = 1; g <= 9; g++) {
-        const gid = g as PalaceId;
-        if (!(gid in hl)) hl[gid] = "correct";
+    try {
+      setDebugMsg("1:handleCheck 开始");
+      const result = check(undefined, answer);
+      setDebugMsg("2:check 返回 correct=" + result.correct + " errors=" + result.errors.length);
+      setToast(result);
+      setDebugMsg("3:setToast 已调用");
+      const hl: Partial<Record<PalaceId, "correct" | "error">> = {};
+      if (result.correct) {
+        for (let g = 1; g <= 9; g++) hl[g as PalaceId] = "correct";
+      } else {
+        for (const err of result.errors) hl[err.gongId] = "error";
+        for (let g = 1; g <= 9; g++) {
+          const gid = g as PalaceId;
+          if (!(gid in hl)) hl[gid] = "correct";
+        }
       }
+      setErrorHighlights(hl);
+      setDebugMsg("4:完成");
+    } catch (e) {
+      setDebugMsg("ERR:" + String(e));
+      setToast({
+        step: currentStep,
+        correct: false,
+        errors: [{ gongId: 1 as PalaceId, field: "系统错误", expected: "", got: String(e) }],
+      });
     }
-    setErrorHighlights(hl);
-  }, [check, answer]);
+  }, [check, answer, currentStep]);
 
   // 定局输入
   const handleBureauAnswer = useCallback((yangDun: boolean, bureau: number) => {
@@ -229,6 +241,11 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
       <div className="max-w-5xl mx-auto px-3 py-4">
           <header className="text-center mb-4">
             <h1 className="text-2xl font-bold text-amber-400">奇门排盘练习器</h1>
+            {debugMsg && (
+              <div className="mt-1 px-3 py-1 bg-red-700 text-white text-xs rounded-lg inline-block font-mono">
+                DEBUG: {debugMsg}
+              </div>
+            )}
             <GanzhiBar date={date} />
             <p className="text-xs text-gray-500 mt-1">
               {chartMeta
