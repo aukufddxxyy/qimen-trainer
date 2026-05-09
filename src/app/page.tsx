@@ -5,10 +5,10 @@ import { usePractice } from "@/hooks/usePractice";
 import { PanGrid, CandidatePopover } from "@/components/PanGrid";
 import { ControlBar } from "@/components/ControlBar";
 import { GanzhiBar } from "@/components/GanzhiBar";
-import { BureauInput, XunShouInput } from "@/components/StepInputs";
 import { QuickRefDialog } from "@/components/QuickRefs";
 import { Toast } from "@/components/Toast";
 import { paiPan } from "@/lib/engine";
+import { LIU_JIA_GAN } from "@/lib/calendar";
 import type { PalaceId, TianGan, NineStar, EightDoor, EightSpirit, LiuJia } from "@/lib/types";
 import { TIAN_GAN, NINE_STARS, EIGHT_DOORS, EIGHT_SPIRITS } from "@/lib/types";
 
@@ -17,6 +17,120 @@ type PopoverType = {
   options: { label: string; value: string }[];
   onSelect: (value: string) => void;
 };
+
+// ---- 旬首弹窗（第三步） ----
+function XunShouPopover({ gongId, onSelect, onClose }: { gongId: PalaceId; onSelect: (zhiFu: NineStar, zhiShi: EightDoor) => void; onClose: () => void }) {
+  const [zhiFu, setZhiFu] = useState<NineStar | null>(null);
+  const [zhiShi, setZhiShi] = useState<EightDoor | null>(null);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 shadow-2xl max-w-xs w-full mx-3"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-amber-400 font-medium">宫{gongId} · 选择值符值使</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-lg cursor-pointer">✕</button>
+        </div>
+
+        {/* 值符选择 */}
+        <div className="mb-3">
+          <div className="text-xs text-gray-500 mb-1">值符（九星）</div>
+          <div className="grid grid-cols-3 gap-1">
+            {NINE_STARS.map(s => (
+              <button key={s}
+                onClick={() => setZhiFu(s)}
+                className={`py-1.5 text-xs rounded-lg transition-colors ${
+                  zhiFu === s ? "bg-amber-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
+              >{s}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* 值使选择 */}
+        <div className="mb-3">
+          <div className="text-xs text-gray-500 mb-1">值使（八门）</div>
+          <div className="grid grid-cols-4 gap-1">
+            {EIGHT_DOORS.map(d => (
+              <button key={d}
+                onClick={() => setZhiShi(d)}
+                className={`py-1.5 text-xs rounded-lg transition-colors ${
+                  zhiShi === d ? "bg-amber-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
+              >{d}</button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() => zhiFu && zhiShi && onSelect(zhiFu, zhiShi)}
+          disabled={!zhiFu || !zhiShi}
+          className="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          确认
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---- 定局遮罩（第一步） ----
+function BureauOverlay({ yangDun, bureau, onYangDun, onBureau }: {
+  yangDun: boolean | undefined;
+  bureau: number | undefined;
+  onYangDun: (v: boolean) => void;
+  onBureau: (v: number) => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/80 backdrop-blur-sm rounded-xl">
+      <div className="bg-gray-900 border border-amber-500/60 rounded-xl p-5 shadow-2xl max-w-xs w-full mx-3">
+        <h3 className="text-sm text-amber-400 font-medium mb-3 flex items-center gap-1">
+          <span>📋</span> 第一步：定局
+        </h3>
+
+        {/* 阴阳遁 */}
+        <div className="flex gap-2 mb-3">
+          <button
+            onClick={() => onYangDun(true)}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              yangDun === true ? "bg-amber-600 text-white shadow-md" : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+            }`}
+          >
+            ☀ 阳遁（冬至→芒种）
+          </button>
+          <button
+            onClick={() => onYangDun(false)}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              yangDun === false ? "bg-amber-600 text-white shadow-md" : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+            }`}
+          >
+            🌙 阴遁（夏至→大雪）
+          </button>
+        </div>
+
+        {/* 局数 */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm text-gray-400">
+            {yangDun === undefined ? "请先选择" : yangDun ? "阳遁" : "阴遁"}
+          </span>
+          <select
+            value={bureau ?? 1}
+            onChange={e => onBureau(+e.target.value)}
+            className="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-white cursor-pointer text-sm"
+          >
+            {[1,2,3,4,5,6,7,8,9].map(n => (
+              <option key={n} value={n}>{n}局</option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-[10px] text-gray-600 mt-2 text-center">
+          选择完成后点击左侧「核对答案」确认
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { state, setDate, setMode, setStep, setAnswer, check, randomDate, reveal, hideAnswer, togglePatterns, resetStep, resetAll, undo } = usePractice();
@@ -30,6 +144,7 @@ export default function Home() {
   const [aiKey, setAiKey] = useState("");
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [xunShouPopover, setXunShouPopover] = useState<PalaceId | null>(null);
 
   const isStepMode = mode === "step";
 
@@ -89,8 +204,12 @@ export default function Home() {
         case "shenpan":
           options = EIGHT_SPIRITS.map(s => ({ label: s, value: s }));
           break;
+        case "xunshou":
+          // 点击宫位 → 弹出值符值使选择器
+          setXunShouPopover(gongId);
+          return;
         default:
-          // 定局/旬首步骤不弹窗
+          // 定局步骤不弹窗（遮罩处理）
           return;
       }
     } else {
@@ -139,6 +258,23 @@ export default function Home() {
     });
   }, [isStepMode, currentStep, answer, setAnswer]);
 
+  // 旬首弹窗选择完成
+  const handleXunShouSelect = useCallback((gongId: PalaceId, zhiFu: NineStar, zhiShi: EightDoor) => {
+    // 根据点击的宫位，从地盘找到该宫的干 → 推导旬首
+    const dipanGan = answer.dipan?.[gongId];
+    let xunShou: LiuJia | undefined;
+    if (dipanGan) {
+      // 反查: 哪个旬首的干 = dipanGan
+      for (const [lj, gan] of Object.entries(LIU_JIA_GAN)) {
+        if (gan === dipanGan) { xunShou = lj as LiuJia; break; }
+      }
+    }
+    const newAnswer: typeof answer = { ...answer, zhiFu, zhiShi };
+    if (xunShou) newAnswer.xunShou = xunShou;
+    setAnswer(newAnswer);
+    setXunShouPopover(null);
+  }, [answer, setAnswer]);
+
   // 核对答案
   const handleCheck = useCallback(() => {
     try {
@@ -147,6 +283,11 @@ export default function Home() {
       const hl: Partial<Record<PalaceId, "correct" | "error">> = {};
       if (result.correct) {
         for (let g = 1; g <= 9; g++) hl[g as PalaceId] = "correct";
+        // 如果旬首步骤全对，标出值符所在宫
+        if (currentStep === "xunshou") {
+          const chart = paiPan(date);
+          setZhiFuGong(chart.meta.zhiFuGong);
+        }
       } else {
         for (const err of result.errors) hl[err.gongId] = "error";
         for (let g = 1; g <= 9; g++) {
@@ -162,28 +303,7 @@ export default function Home() {
         errors: [{ gongId: 1 as PalaceId, field: "系统错误", expected: "", got: String(e) }],
       });
     }
-  }, [check, answer, currentStep]);
-
-  // 定局输入
-  const handleBureauAnswer = useCallback((yangDun: boolean, bureau: number) => {
-    const newAnswer = { ...answer, yangDun, bureau };
-    setAnswer(newAnswer);
-    const result = check(undefined, newAnswer);
-    setToast(result);
-  }, [answer, setAnswer, check]);
-
-  // 旬首输入
-  const handleXunShouAnswer = useCallback((xunShou: LiuJia, zhiFu: NineStar, zhiShi: EightDoor) => {
-    const newAnswer = { ...answer, xunShou, zhiFu, zhiShi };
-    setAnswer(newAnswer);
-    const result = check(undefined, newAnswer);
-    setToast(result);
-    // 如果全对，标出值符所在宫
-    if (result.correct) {
-      const chart = paiPan(date);
-      setZhiFuGong(chart.meta.zhiFuGong);
-    }
-  }, [answer, setAnswer, check, date]);
+  }, [check, answer, currentStep, date]);
 
   // AI 解读
   const handleAIInterpret = useCallback(async () => {
@@ -262,27 +382,24 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
           </aside>
 
           <main className="flex flex-col items-center gap-4">
-            {/* 定局步骤 */}
-            {isStepMode && currentStep === "bureau" && !showAnswer && (
-              <BureauInput
-                onAnswer={handleBureauAnswer}
-                initialYangDun={answer.yangDun}
-                initialBureau={answer.bureau}
+            {/* 九宫格 + 定局遮罩 */}
+            <div className="relative w-full max-w-[420px] mx-auto">
+              <PanGrid
+                palaces={displayPalaces}
+                highlights={errorHighlights}
+                markedGong={zhiFuGong}
+                onCellClick={handleCellClick}
               />
-            )}
-
-            {/* 旬首步骤 */}
-            {isStepMode && currentStep === "xunshou" && !showAnswer && (
-              <XunShouInput onAnswer={handleXunShouAnswer} />
-            )}
-
-            {/* 九宫格始终显示 */}
-            <PanGrid
-              palaces={displayPalaces}
-              highlights={errorHighlights}
-              markedGong={zhiFuGong}
-              onCellClick={handleCellClick}
-            />
+              {/* 定局遮罩 */}
+              {isStepMode && currentStep === "bureau" && !showAnswer && (
+                <BureauOverlay
+                  yangDun={answer.yangDun}
+                  bureau={answer.bureau}
+                  onYangDun={(v) => setAnswer({ ...answer, yangDun: v })}
+                  onBureau={(v) => setAnswer({ ...answer, bureau: v })}
+                />
+              )}
+            </div>
 
             {/* 判断结果 — 弹窗显示 */}
             {toast && (
@@ -352,6 +469,15 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
 
       {showQuickRef && (
         <QuickRefDialog onClose={() => setShowQuickRef(false)} />
+      )}
+
+      {/* 旬首弹窗 */}
+      {xunShouPopover && (
+        <XunShouPopover
+          gongId={xunShouPopover}
+          onSelect={(zf, zs) => handleXunShouSelect(xunShouPopover, zf, zs)}
+          onClose={() => setXunShouPopover(null)}
+        />
       )}
     </div>
   );
