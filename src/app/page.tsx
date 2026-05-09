@@ -371,6 +371,30 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
               isStepMode={isStepMode} showAnswer={showAnswer}
               onResetStep={resetStep} onResetAll={resetAll} onUndo={undo}
             />
+            {/* 盘局信息 */}
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-3 space-y-1.5">
+              <h4 className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">当前盘局</h4>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-gray-500">局数</span>
+                <span className={answer.yangDun !== undefined ? (answer.yangDun ? "text-green-400" : "text-blue-400") : "text-gray-700"}>
+                  {answer.yangDun !== undefined
+                    ? `${answer.yangDun ? "☀ 阳遁" : "🌙 阴遁"} ${answer.bureau ?? "?"}局`
+                    : "--"}
+                </span>
+                <span className="text-gray-500">旬首</span>
+                <span className={answer.xunShou ? "text-amber-400" : "text-gray-700"}>
+                  {answer.xunShou ?? "--"}
+                </span>
+                <span className="text-gray-500">值符</span>
+                <span className={answer.zhiFu ? "text-green-400" : "text-gray-700"}>
+                  {answer.zhiFu ?? "--"}
+                </span>
+                <span className="text-gray-500">值使</span>
+                <span className={answer.zhiShi ? "text-blue-400" : "text-gray-700"}>
+                  {answer.zhiShi ?? "--"}
+                </span>
+              </div>
+            </div>
             <button
               onClick={() => setShowQuickRef(true)}
               className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
