@@ -362,3 +362,246 @@ function JiaziPanel() {
     </>
   );
 }
+
+// ============================================================
+// 5. 排盘教程（六步 tab 弹窗）
+// ============================================================
+
+const TUTORIAL_TABS = [
+  { id: "bureau", label: "① 定局" },
+  { id: "dipan",   label: "② 地盘" },
+  { id: "xunshou", label: "③ 值符值使" },
+  { id: "tianpan", label: "④ 天盘" },
+  { id: "renpan",  label: "⑤ 人盘" },
+  { id: "shenpan", label: "⑥ 神盘" },
+] as const;
+type TutorialTab = typeof TUTORIAL_TABS[number]["id"];
+
+function MethodBox({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-gray-800 rounded-lg p-3 mb-3">
+      <h4 className="text-xs text-amber-400 font-medium mb-1.5">{title}</h4>
+      {children}
+    </div>
+  );
+}
+
+export function TutorialDialog({ onClose }: { onClose: () => void }) {
+  const [tab, setTab] = useState<TutorialTab>("bureau");
+
+  return (
+    <DialogShell title="📖 排盘教程" onClose={onClose}>
+      <div className="flex flex-wrap gap-1 mb-3 bg-gray-800 rounded-lg p-1">
+        {TUTORIAL_TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
+              tab === t.id ? "bg-amber-600 text-white" : "text-gray-400 hover:text-gray-200"
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "bureau"  && <BureauTutorial />}
+      {tab === "dipan"   && <DiPanTutorial />}
+      {tab === "xunshou" && <XunShouTutorial />}
+      {tab === "tianpan" && <TianPanTutorial />}
+      {tab === "renpan"  && <RenPanTutorial />}
+      {tab === "shenpan" && <ShenPanTutorial />}
+    </DialogShell>
+  );
+}
+
+// ---- ① 定局 ----
+function BureauTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="四步走">
+        <div className="space-y-2 text-xs">
+          <div className="flex gap-2">
+            <span className="text-amber-400 font-medium shrink-0">① 查节气：</span>
+            <span>公历日期查二十四节气表。如 5月19日 → <span className="text-green-400">立夏</span></span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-amber-400 font-medium shrink-0">② 判阴阳：</span>
+            <span><span className="text-green-400">冬至→芒种 = 阳遁</span>，<span className="text-blue-400">夏至→大雪 = 阴遁</span></span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-amber-400 font-medium shrink-0">③ 定三元：</span>
+            <span>算日干支的六十甲子序号，往前找最近的符头（甲/己日）→ 上/中/下元</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-amber-400 font-medium shrink-0">④ 查局数：</span>
+            <span>节气 + 三元 → 查表得局数（1~9）</span>
+          </div>
+        </div>
+      </MethodBox>
+
+      <MethodBox title="六十甲子序号速算">
+        <p className="text-xs mb-1"><code className="bg-gray-700 px-1 rounded">序号 = (天干位×6 - 地支位×5) mod 60</code></p>
+        <p className="text-xs text-gray-400">天干：甲0乙1丙2丁3戊4己5庚6辛7壬8癸9 | 地支：子0丑1寅2卯3辰4巳5午6未7申8酉9戌10亥11</p>
+        <p className="text-xs mt-1">例：<span className="text-amber-400">壬午</span> → 8×6 − 6×5 = 48−30 = <span className="text-green-400">18</span></p>
+      </MethodBox>
+
+      <MethodBox title="三元判断（符头）">
+        <p className="text-xs mb-1">符头 = 日干为甲或己。上中下元循环：上→中→下→上…</p>
+        <p className="text-xs text-gray-400">符头表：甲子0上 | 己巳5中 | 甲戌10下 | 己卯15上 | 甲申20中 | 己丑25下 | 甲午30上 | 己亥35中 | 甲辰40下 | 己酉45上 | 甲寅50中 | 己未55下</p>
+        <p className="text-xs mt-1">例：序号18 → 往前：己卯(15)≤18 ✓ → <span className="text-green-400">上元</span></p>
+      </MethodBox>
+
+      <MethodBox title="完整示例">
+        <p className="text-xs"><span className="text-gray-400">2025.5.19 壬午日 立夏 → 阳遁 → 上元 →</span> <span className="text-green-400 font-medium text-base">阳遁 4 局</span></p>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 三元判断只检查当天本身是不是符头（甲/己日），不是就默认下元。正确做法是<span className="text-red-300">往前找最近的符头</span>。
+      </div>
+    </div>
+  );
+}
+
+// ---- ② 地盘 ----
+function DiPanTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="口诀">
+        <p className="text-xs"><span className="text-green-400">阳遁顺布</span>（宫号 1→9），<span className="text-blue-400">阴遁逆布</span>（宫号 9→1）</p>
+        <p className="text-xs mt-1">三奇六仪顺序永远固定：<span className="text-amber-400 font-medium">戊→己→庚→辛→壬→癸→丁→丙→乙</span></p>
+      </MethodBox>
+
+      <MethodBox title="算法">
+        <div className="text-xs space-y-1">
+          <p>① <span className="text-amber-400">戊</span> 落在<b>局数宫</b>（如阳遁4局 → 戊在宫4）</p>
+          <p>② 其余依序排布：<span className="text-green-400">阳遁宫号递增</span>，<span className="text-blue-400">阴遁宫号递减</span></p>
+          <p>③ 九宫循环：宫9后回到宫1，宫1逆回到宫9</p>
+        </div>
+      </MethodBox>
+
+      <MethodBox title="示例：阳遁4局">
+        <div className="grid grid-cols-3 gap-1 text-center text-xs">
+          {["宫4 戊","宫5 己","宫6 庚","宫3 乙","宫？丁","宫7 辛","宫2 丙","宫1 癸","宫8 壬"].map((s,i) => (
+            <div key={i} className={`py-1 rounded ${i===0?"bg-amber-600/30 text-amber-400":i===4?"bg-gray-700 text-gray-400":"bg-gray-800 text-gray-300"}`}>{s}</div>
+          ))}
+        </div>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 忘记<span className="text-red-300">戊从局数宫开始</span>，或者搞反顺逆方向。
+      </div>
+    </div>
+  );
+}
+
+// ---- ③ 旬首/值符值使 ----
+function XunShouTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="概念">
+        <p className="text-xs">值符 = 九星中的领头星 | 值使 = 八门中的领头门<br/>二者由<span className="text-amber-400">旬首</span>决定，落宫由时干/时支在后续步骤确定。</p>
+      </MethodBox>
+
+      <MethodBox title="三步走">
+        <div className="text-xs space-y-1.5">
+          <div><span className="text-amber-400">① 找旬首：</span>时干支序号 ÷ 10 取整 → 六甲之一。如时柱序号23 → 旬首=甲申(20)</div>
+          <div><span className="text-amber-400">② 定六甲干：</span>六甲→天干的映射：<span className="text-green-400">甲子→戊、甲戌→己、甲申→庚、甲午→辛、甲辰→壬、甲寅→癸</span></div>
+          <div><span className="text-amber-400">③ 宫位定位：</span>在<b>地盘</b>上找到这个干所在的宫 → 该宫的固定星=值符，固定门=值使</div>
+        </div>
+      </MethodBox>
+
+      <MethodBox title="示例">
+        <p className="text-xs"><span className="text-gray-400">时柱庚申(56) → 旬首甲寅(50) → 甲寅干=癸 → 地盘癸在宫1 →</span></p>
+        <p className="text-xs mt-1"><span className="text-green-400">值符=天蓬</span>（宫1星）<span className="text-blue-400 ml-3">值使=休</span>（宫1门）</p>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 找旬首用日柱而不是<span className="text-red-300">时柱</span>。六甲→干的映射记混。
+      </div>
+    </div>
+  );
+}
+
+// ---- ④ 天盘 ----
+function TianPanTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="口诀">
+        <p className="text-xs"><span className="text-amber-400">值符随时干，阳顺阴逆转</span></p>
+      </MethodBox>
+
+      <MethodBox title="三步走">
+        <div className="text-xs space-y-1.5">
+          <div><span className="text-amber-400">① 找时干宫：</span>时干的第一个字（如庚申→庚）在地盘哪个宫 → 目标宫</div>
+          <div><span className="text-amber-400">② 值符落宫：</span>值符星放到目标宫</div>
+          <div><span className="text-amber-400">③ 其余星排列：</span>其余八星按九星顺序，从目标宫开始阳顺阴逆排布</div>
+        </div>
+      </MethodBox>
+
+      <MethodBox title="关键规则">
+        <p className="text-xs">每颗星携带的<span className="text-amber-400">天盘干</span>，是该星<b>原始宫位</b>的地盘干，<b>不是</b>当前落宫的地盘干！</p>
+      </MethodBox>
+
+      <MethodBox title="示例">
+        <p className="text-xs text-gray-400">值符=天蓬(宫1星)，时干=庚(在地盘宫6)</p>
+        <p className="text-xs mt-1"><span className="text-green-400">天蓬星放在宫6</span>，携带宫1的地盘干（戊）→ 宫6=天蓬+戊</p>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 天盘干用当前宫的地盘干，而不是<span className="text-red-300">原始宫的地盘干</span>。
+      </div>
+    </div>
+  );
+}
+
+// ---- ⑤ 人盘 ----
+function RenPanTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="口诀">
+        <p className="text-xs"><span className="text-amber-400">值使随时支，阳顺阴逆转，中五寄坤二</span></p>
+      </MethodBox>
+
+      <MethodBox title="算法">
+        <div className="text-xs space-y-1.5">
+          <div><span className="text-amber-400">① 算步数：</span>(时支序号 − 旬首地支序号 + 12) mod 12 → 步数</div>
+          <div><span className="text-amber-400">② 值使落宫：</span>从<b>旬首宫</b>（值符的原始宫）开始，走步数步，<span className="text-red-400">跳过中五宫</span></div>
+          <div><span className="text-amber-400">③ 其余七门：</span>从值使宫开始，阳顺阴逆排列，同样<span className="text-red-400">跳过中五宫</span></div>
+          <div><span className="text-amber-400">④ 最后设置：</span>中五宫的门 = 坤二宫的门</div>
+        </div>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 在循环内设中五宫=坤二（会覆盖坤二合法值），必须<span className="text-red-300">循环结束后</span>再设 palaces[5]=palaces[2]。
+      </div>
+    </div>
+  );
+}
+
+// ---- ⑥ 神盘 ----
+function ShenPanTutorial() {
+  return (
+    <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <MethodBox title="口诀">
+        <p className="text-xs"><span className="text-amber-400">小值符跟大值符，阳顺阴逆排八神</span></p>
+      </MethodBox>
+
+      <MethodBox title="算法">
+        <div className="text-xs space-y-1.5">
+          <div><span className="text-amber-400">① 起点：</span>神盘值符（小值符）放在<b>天盘值符所在宫</b>（即时干宫）</div>
+          <div><span className="text-amber-400">② 排列：</span>从起点开始排八神，<span className="text-red-400">跳过中五宫</span></div>
+          <div><span className="text-amber-400">③ 最后设置：</span>中五宫的神 = 坤二宫的神</div>
+        </div>
+      </MethodBox>
+
+      <MethodBox title="八神顺序">
+        <div className="text-xs">
+          <p><span className="text-green-400">阳遁：</span>值符→螣蛇→太阴→六合→白虎→玄武→九地→九天</p>
+          <p className="mt-1"><span className="text-blue-400">阴遁：</span>值符→九天→九地→玄武→白虎→六合→太阴→螣蛇</p>
+        </div>
+      </MethodBox>
+
+      <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 中五寄坤二的处理和人盘一样——循环后再设，不要循环内设。
+      </div>
+    </div>
+  );
+}
