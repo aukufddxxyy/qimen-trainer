@@ -177,47 +177,49 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    if (stepToCheck === "dipan" && ans.dipan) {
+    if (stepToCheck === "dipan") {
       for (let g = 1; g <= 9; g++) {
         const gid = g as PalaceId;
         const expected = chart.palaces[gid].diPan;
-        const got = ans.dipan[gid];
-        if (got && got !== expected) {
-          errors.push({ gongId: gid, field: "地盘干", expected, got });
+        const got = ans.dipan?.[gid];
+        if (got !== expected) {
+          errors.push({ gongId: gid, field: "地盘干", expected, got: got ?? "（未填）" });
         }
       }
     }
 
-    if (stepToCheck === "tianpan" && ans.tianpan) {
+    if (stepToCheck === "tianpan") {
       for (let g = 1; g <= 9; g++) {
         const gid = g as PalaceId;
-        const cell = ans.tianpan[gid];
+        const cell = ans.tianpan?.[gid];
         const exp = chart.palaces[gid];
-        if (cell) {
+        if (!cell) {
+          errors.push({ gongId: gid, field: "天盘", expected: `${exp.tianPanStar}+${exp.tianPanGan}`, got: "（未填）" });
+        } else {
           if (cell.star !== exp.tianPanStar) errors.push({ gongId: gid, field: "星", expected: exp.tianPanStar, got: cell.star });
           if (cell.gan !== exp.tianPanGan) errors.push({ gongId: gid, field: "天盘干", expected: exp.tianPanGan, got: cell.gan });
         }
       }
     }
 
-    if (stepToCheck === "renpan" && ans.renpan) {
+    if (stepToCheck === "renpan") {
       for (let g = 1; g <= 9; g++) {
         const gid = g as PalaceId;
-        const got = ans.renpan[gid];
+        const got = ans.renpan?.[gid];
         const expected = chart.palaces[gid].renPanDoor;
-        if (got && got !== expected) {
-          errors.push({ gongId: gid, field: "门", expected, got });
+        if (got !== expected) {
+          errors.push({ gongId: gid, field: "门", expected, got: got ?? "（未填）" });
         }
       }
     }
 
-    if (stepToCheck === "shenpan" && ans.shenpan) {
+    if (stepToCheck === "shenpan") {
       for (let g = 1; g <= 9; g++) {
         const gid = g as PalaceId;
-        const got = ans.shenpan[gid];
+        const got = ans.shenpan?.[gid];
         const expected = chart.palaces[gid].shenPanSpirit;
-        if (got && got !== expected) {
-          errors.push({ gongId: gid, field: "神", expected, got });
+        if (got !== expected) {
+          errors.push({ gongId: gid, field: "神", expected, got: got ?? "（未填）" });
         }
       }
     }
