@@ -5,12 +5,12 @@ import { usePractice } from "@/hooks/usePractice";
 import { PanGrid, CandidatePopover } from "@/components/PanGrid";
 import { ControlBar } from "@/components/ControlBar";
 import { GanzhiBar } from "@/components/GanzhiBar";
-import { QuickRefDialog } from "@/components/QuickRefs";
+import { QuickRefDialog, TutorialDialog } from "@/components/QuickRefs";
 import { Toast } from "@/components/Toast";
 import { paiPan } from "@/lib/engine";
 import { LIU_JIA_GAN } from "@/lib/calendar";
 import type { PalaceId, TianGan, NineStar, EightDoor, EightSpirit, LiuJia } from "@/lib/types";
-import { TIAN_GAN, NINE_STARS, EIGHT_DOORS, EIGHT_SPIRITS } from "@/lib/types";
+import { TIAN_GAN, NINE_STARS, EIGHT_DOORS, EIGHT_SPIRITS, LIU_JIA } from "@/lib/types";
 
 type PopoverType = {
   gongId: PalaceId;
@@ -18,57 +18,73 @@ type PopoverType = {
   onSelect: (value: string) => void;
 };
 
-// ---- 旬首弹窗（第三步） ----
-function XunShouPopover({ gongId, onSelect, onClose }: { gongId: PalaceId; onSelect: (zhiFu: NineStar, zhiShi: EightDoor) => void; onClose: () => void }) {
-  const [zhiFu, setZhiFu] = useState<NineStar | null>(null);
-  const [zhiShi, setZhiShi] = useState<EightDoor | null>(null);
-
+// ---- 旬首遮罩（第三步） ----
+function XunShouOverlay({ xunShou, zhiFu, zhiShi, onXunShou, onZhiFu, onZhiShi }: {
+  xunShou: LiuJia | undefined;
+  zhiFu: NineStar | undefined;
+  zhiShi: EightDoor | undefined;
+  onXunShou: (v: LiuJia) => void;
+  onZhiFu: (v: NineStar) => void;
+  onZhiShi: (v: EightDoor) => void;
+}) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 shadow-2xl max-w-xs w-full mx-3"
-        onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-amber-400 font-medium">宫{gongId} · 选择值符值使</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-lg cursor-pointer">✕</button>
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-950/30 backdrop-blur-[2px] rounded-xl">
+      <div className="bg-gray-900 border border-amber-500/60 rounded-xl p-5 shadow-2xl max-w-xs w-full mx-3">
+        <h3 className="text-sm text-amber-400 font-medium mb-3 flex items-center gap-1">
+          <span>📋</span> 第三步：旬首 · 值符值使
+        </h3>
+
+        {/* 旬首 */}
+        <div className="mb-3">
+          <div className="text-xs text-gray-500 mb-1.5">旬首</div>
+          <div className="grid grid-cols-3 gap-1">
+            {LIU_JIA.map(lj => (
+              <button key={lj}
+                onClick={() => onXunShou(lj)}
+                className={`py-1.5 text-xs rounded-lg transition-colors ${
+                  xunShou === lj ? "bg-amber-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
+              >{lj}</button>
+            ))}
+          </div>
+          {xunShou && (
+            <p className="text-[10px] text-gray-500 mt-1">六甲干：{LIU_JIA_GAN[xunShou]}</p>
+          )}
         </div>
 
-        {/* 值符选择 */}
+        {/* 值符 */}
         <div className="mb-3">
-          <div className="text-xs text-gray-500 mb-1">值符（九星）</div>
+          <div className="text-xs text-gray-500 mb-1.5">值符（九星）</div>
           <div className="grid grid-cols-3 gap-1">
             {NINE_STARS.map(s => (
               <button key={s}
-                onClick={() => setZhiFu(s)}
+                onClick={() => onZhiFu(s)}
                 className={`py-1.5 text-xs rounded-lg transition-colors ${
-                  zhiFu === s ? "bg-amber-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  zhiFu === s ? "bg-green-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                 }`}
               >{s}</button>
             ))}
           </div>
         </div>
 
-        {/* 值使选择 */}
-        <div className="mb-3">
-          <div className="text-xs text-gray-500 mb-1">值使（八门）</div>
+        {/* 值使 */}
+        <div>
+          <div className="text-xs text-gray-500 mb-1.5">值使（八门）</div>
           <div className="grid grid-cols-4 gap-1">
             {EIGHT_DOORS.map(d => (
               <button key={d}
-                onClick={() => setZhiShi(d)}
+                onClick={() => onZhiShi(d)}
                 className={`py-1.5 text-xs rounded-lg transition-colors ${
-                  zhiShi === d ? "bg-amber-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  zhiShi === d ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                 }`}
               >{d}</button>
             ))}
           </div>
         </div>
 
-        <button
-          onClick={() => zhiFu && zhiShi && onSelect(zhiFu, zhiShi)}
-          disabled={!zhiFu || !zhiShi}
-          className="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          确认
-        </button>
+        <p className="text-[10px] text-gray-600 mt-3 text-center">
+          选择完成后点击左侧「核对答案」确认
+        </p>
       </div>
     </div>
   );
@@ -143,11 +159,11 @@ export default function Home() {
   const [errorHighlights, setErrorHighlights] = useState<Partial<Record<PalaceId, "correct" | "error">>>({});
   const [zhiFuGong, setZhiFuGong] = useState<PalaceId | null>(null);
   const [showQuickRef, setShowQuickRef] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [toast, setToast] = useState<import("@/hooks/usePractice").CheckResult | null>(null);
   const [aiKey, setAiKey] = useState("");
   const [aiReading, setAiReading] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
-  const [xunShouPopover, setXunShouPopover] = useState<PalaceId | null>(null);
 
   const isStepMode = mode === "step";
 
@@ -208,8 +224,7 @@ export default function Home() {
           options = EIGHT_SPIRITS.map(s => ({ label: s, value: s }));
           break;
         case "xunshou":
-          // 点击宫位 → 弹出值符值使选择器
-          setXunShouPopover(gongId);
+          // 旬首遮罩处理，不弹窗
           return;
         default:
           // 定局步骤不弹窗（遮罩处理）
@@ -260,23 +275,6 @@ export default function Home() {
       },
     });
   }, [isStepMode, currentStep, answer, setAnswer]);
-
-  // 旬首弹窗选择完成
-  const handleXunShouSelect = useCallback((gongId: PalaceId, zhiFu: NineStar, zhiShi: EightDoor) => {
-    // 根据点击的宫位，从地盘找到该宫的干 → 推导旬首
-    const dipanGan = answer.dipan?.[gongId];
-    let xunShou: LiuJia | undefined;
-    if (dipanGan) {
-      // 反查: 哪个旬首的干 = dipanGan
-      for (const [lj, gan] of Object.entries(LIU_JIA_GAN)) {
-        if (gan === dipanGan) { xunShou = lj as LiuJia; break; }
-      }
-    }
-    const newAnswer: typeof answer = { ...answer, zhiFu, zhiShi };
-    if (xunShou) newAnswer.xunShou = xunShou;
-    setAnswer(newAnswer);
-    setXunShouPopover(null);
-  }, [answer, setAnswer]);
 
   // 核对答案
   const handleCheck = useCallback(() => {
@@ -377,6 +375,12 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
             >
               📚 速查手册
             </button>
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
+            >
+              📖 排盘教程
+            </button>
           </aside>
 
           <main className="flex flex-col items-center gap-4">
@@ -419,6 +423,17 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
                   bureau={answer.bureau}
                   onYangDun={(v) => setAnswer({ ...answer, yangDun: v })}
                   onBureau={(v) => setAnswer({ ...answer, bureau: v })}
+                />
+              )}
+              {/* 旬首遮罩 */}
+              {isStepMode && currentStep === "xunshou" && !showAnswer && (
+                <XunShouOverlay
+                  xunShou={answer.xunShou}
+                  zhiFu={answer.zhiFu}
+                  zhiShi={answer.zhiShi}
+                  onXunShou={(v) => setAnswer({ ...answer, xunShou: v })}
+                  onZhiFu={(v) => setAnswer({ ...answer, zhiFu: v })}
+                  onZhiShi={(v) => setAnswer({ ...answer, zhiShi: v })}
                 />
               )}
             </div>
@@ -493,13 +508,8 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
         <QuickRefDialog onClose={() => setShowQuickRef(false)} />
       )}
 
-      {/* 旬首弹窗 */}
-      {xunShouPopover && (
-        <XunShouPopover
-          gongId={xunShouPopover}
-          onSelect={(zf, zs) => handleXunShouSelect(xunShouPopover, zf, zs)}
-          onClose={() => setXunShouPopover(null)}
-        />
+      {showTutorial && (
+        <TutorialDialog onClose={() => setShowTutorial(false)} />
       )}
     </div>
   );
