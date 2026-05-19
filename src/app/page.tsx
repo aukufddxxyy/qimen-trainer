@@ -371,8 +371,17 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
               isStepMode={isStepMode} showAnswer={showAnswer}
               onResetStep={resetStep} onResetAll={resetAll} onUndo={undo}
             />
+            <button
+              onClick={() => setShowQuickRef(true)}
+              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
+            >
+              📚 速查手册
+            </button>
+          </aside>
+
+          <main className="flex flex-col items-center gap-4">
             {/* 盘局信息 */}
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-3 space-y-1.5">
+            <div className="w-full max-w-[420px] bg-gray-900 border border-gray-800 rounded-lg p-3 space-y-1.5">
               <h4 className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">当前盘局</h4>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                 <span className="text-gray-500">局数</span>
@@ -395,15 +404,6 @@ ${[1,2,3,4,5,6,7,8,9].map(g => {
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => setShowQuickRef(true)}
-              className="w-full py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-400"
-            >
-              📚 速查手册
-            </button>
-          </aside>
-
-          <main className="flex flex-col items-center gap-4">
             {/* 九宫格 + 定局遮罩 */}
             <div className="relative w-full max-w-[420px] mx-auto">
               <PanGrid
