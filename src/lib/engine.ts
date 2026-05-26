@@ -118,16 +118,22 @@ function stepTianPan(
   shiGanZhi: string,
   dipan: Record<PalaceId, TianGan>,
   zhiFu: NineStar,
+  zhiFuGong: PalaceId,
   yangDun: boolean,
 ): Record<PalaceId, { gan: TianGan; star: NineStar }> {
   const shiGan = shiGanZhi[0] as TianGan;
 
-  // 找时干在地盘哪个宫
-  let shiGanGong: PalaceId = 1;
-  for (const [g, gan] of Object.entries(dipan)) {
-    if (gan === shiGan) {
-      shiGanGong = Number(g) as PalaceId;
-      break;
+  // 找时干在地盘哪个宫（甲遁于旬首六仪之下，用值符宫）
+  let shiGanGong: PalaceId;
+  if (shiGan === "甲") {
+    shiGanGong = zhiFuGong;
+  } else {
+    shiGanGong = 1;
+    for (const [g, gan] of Object.entries(dipan)) {
+      if (gan === shiGan) {
+        shiGanGong = Number(g) as PalaceId;
+        break;
+      }
     }
   }
 
@@ -322,13 +328,18 @@ export function paiPan(date: Date): QiMenChart {
   const { xunShou, zhiFu, zhiShi, zhiFuGong } = stepZhiFuZhiShi(shiGanZhi, dipan);
 
   // Step 4: 转天盘
-  const tianpanPartial = stepTianPan(shiGanZhi, dipan, zhiFu, yangDun);
+  const tianpanPartial = stepTianPan(shiGanZhi, dipan, zhiFu, zhiFuGong, yangDun);
 
-  // 时干所在宫（天盘值符所在宫）
+  // 时干所在宫（天盘值符所在宫，用于神盘。甲遁于旬首六仪之下）
   const shiGan = shiGanZhi[0] as TianGan;
-  let shiGanGong: PalaceId = 1;
-  for (const [g, gan] of Object.entries(dipan)) {
-    if (gan === shiGan) { shiGanGong = Number(g) as PalaceId; break; }
+  let shiGanGong: PalaceId;
+  if (shiGan === "甲") {
+    shiGanGong = zhiFuGong;
+  } else {
+    shiGanGong = 1;
+    for (const [g, gan] of Object.entries(dipan)) {
+      if (gan === shiGan) { shiGanGong = Number(g) as PalaceId; break; }
+    }
   }
 
   // Step 5: 转人盘
