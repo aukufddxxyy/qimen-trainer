@@ -530,7 +530,7 @@ function TianPanTutorial() {
 
       <MethodBox title="三步走">
         <div className="text-xs space-y-1.5">
-          <div><span className="text-amber-400">① 找时干宫：</span>时干的第一个字（如庚申→庚）在地盘哪个宫 → 目标宫</div>
+          <div><span className="text-amber-400">① 找时干宫：</span>时干的第一个字（如庚申→庚）在地盘哪个宫 → 目标宫。若时干为<b>甲</b>，甲遁于旬首六仪之下，直接用<span className="text-green-400">值符宫（旬首宫）</span></div>
           <div><span className="text-amber-400">② 值符落宫：</span>值符星放到目标宫</div>
           <div><span className="text-amber-400">③ 其余星排列：</span>其余八星按九星顺序，从目标宫开始阳顺阴逆排布</div>
         </div>
@@ -546,7 +546,7 @@ function TianPanTutorial() {
       </MethodBox>
 
       <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-2 text-xs">
-        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 天盘干用当前宫的地盘干，而不是<span className="text-red-300">原始宫的地盘干</span>。
+        <span className="text-red-400 font-medium">⚠ 常见错误：</span> 天盘干用当前宫的地盘干而不是<span className="text-red-300">原始宫的地盘干</span>；时干为甲时忘记甲遁于六仪，在地盘找不到甲而兜底到错误宫位。
       </div>
     </div>
   );
